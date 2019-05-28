@@ -66,3 +66,4 @@ func (h *StatisticsHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 	w.WriteHeader(http.StatusOK)
 }
+

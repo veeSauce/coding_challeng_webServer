@@ -2,8 +2,9 @@ package weather
 
 import (
 	"encoding/json"
-  "time"
-  "errors"
+	"errors"
+	"strconv"
+	"time"
 )
 
 const (
@@ -21,7 +22,9 @@ const (
 // Measurement represents a measurement at a given time of a collection of metrics.
 type Measurement struct {
 	Timestamp time.Time          `json:"timestamp"`
-	Metrics   map[string]float32 `json:"-"`
+
+	// Metrics can be empty
+	Metrics   map[string]float32 `json:",omitempty"`
 }
 
 // StatisticRow represents a triple of metric, statistical function, and value
@@ -31,23 +34,25 @@ type StatisticRow struct {
 	Value  float32 `json:"value"`
 }
 
+
+
 // MarshalJSON is a custom marshaler used so that the Metrics field
 // is flattened and those values are pushed up to the root JSON object.
 func (m Measurement) MarshalJSON() ([]byte, error) {
 
-  type MeasurementN Measurement
+	type MeasurementN Measurement
 	b, _ := json.Marshal(MeasurementN(m))
 
 	var rm map[string]json.RawMessage
 	json.Unmarshal(b, &rm)
 
-  rm["timestamp"] = json.RawMessage(m.Timestamp.Format(timeFormat))
+	rm["timestamp"] = json.RawMessage(strconv.Quote(m.Timestamp.Format(timeFormat)))
 
 	for k, v := range m.Metrics {
-    if k != "timestamp" {
-      b, _ = json.Marshal(v)
-      rm[k] = json.RawMessage(b)
-    }
+		if k != "timestamp" {
+			b, _ = json.Marshal(v)
+			rm[k] = json.RawMessage(b)
+		}
 	}
 
 	return json.Marshal(rm)

@@ -8,7 +8,7 @@ package weather
 
 import (
 	"encoding/json"
-	"fmt"
+	. "fmt"
 	"net/http"
 	"time"
 
@@ -16,7 +16,7 @@ import (
 )
 
 type measurementsService interface {
-	GetMeasurement(timestamp time.Time) (*Measurement, error)
+	GetMeasurement1(timestamp time.Time) (*Measurement, error)
 	CreateMeasurement(newMeasurement Measurement) error
 }
 
@@ -57,7 +57,8 @@ func (h *MeasurementsHandler) CreateMeasurement(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	loc := fmt.Sprintf("/measurements/%s", measurement.Timestamp.Format(time.RFC3339))
+	measureTime := measurement.Timestamp.Format(time.RFC3339Nano)
+	loc := Sprintf("/measurements/%s", measureTime)
 	w.Header().Set("Location", loc)
 	w.WriteHeader(http.StatusCreated)
 }
@@ -78,11 +79,11 @@ func (h *MeasurementsHandler) GetMeasurement(w http.ResponseWriter, r *http.Requ
 	}
 
 	Info.Printf("Attempting to get measurement for timestamp %v", timestamp)
-	measurement, err := h.svc.GetMeasurement(timestamp)
+	measurement, err := h.svc.GetMeasurement1(timestamp)
 	if err != nil {
 		Error.Println(err)
-		if err.Error() == NOT_IMPLEMENTED {
-			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+		if err.Error() == NOT_FOUND {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		} else {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
@@ -96,6 +97,10 @@ func (h *MeasurementsHandler) GetMeasurement(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	Println("writing response")
+
 	w.Write(bytes)
-	w.WriteHeader(http.StatusOK)
+
+	// this is sending multiple headwrites, w.write is already writing a header for status 200
+	//w.WriteHeader(http.StatusOK)
 }
