@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	. "fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -58,9 +57,9 @@ func (h *MeasurementsHandler) CreateMeasurement(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	measureTime := measurement.Timestamp.Format(time.RFC3339Nano)
+	measureTime := measurement.Timestamp.Format(time.RFC3339)
 	loc := Sprintf("/measurements/%s", measureTime)
-	w.Header().Set("Location", strconv.Quote(loc))
+	w.Header().Set("Location", loc)
 	w.WriteHeader(http.StatusCreated)
 }
 
