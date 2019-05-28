@@ -43,8 +43,8 @@ func (m Measurement) MarshalJSON() ([]byte, error) {
 	type MeasurementN Measurement
 	b, _ := json.Marshal(MeasurementN(m))
 
-	var rm map[string]json.RawMessage
-	json.Unmarshal(b, &rm)
+	rm := make(map[string]json.RawMessage)
+
 
 	rm["timestamp"] = json.RawMessage(strconv.Quote(m.Timestamp.Format(timeFormat)))
 
@@ -52,10 +52,14 @@ func (m Measurement) MarshalJSON() ([]byte, error) {
 		if k != "timestamp" {
 			b, _ = json.Marshal(v)
 			rm[k] = json.RawMessage(b)
+
 		}
 	}
 
-	return json.Marshal(rm)
+
+	byte, _:= json.Marshal(rm)
+
+	return byte, nil
 }
 
 // UnmarshalJSON is a custom unmarshaler used so that fields not on part of the core
