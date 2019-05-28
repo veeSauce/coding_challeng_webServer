@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	. "fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -59,7 +58,7 @@ func (h *MeasurementsHandler) CreateMeasurement(w http.ResponseWriter, r *http.R
 	}
 
 	measureTime := measurement.Timestamp.UTC().Format("2006-01-02T15:04:00:000Z")
-	loc := strconv.Quote("/measurements/"+measureTime)
+	loc := "/measurements/"+measureTime
 	w.Header().Set("Location", loc)
 	w.WriteHeader(http.StatusCreated)
 }
