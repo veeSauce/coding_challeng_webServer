@@ -16,7 +16,7 @@ import (
 )
 
 type measurementsService interface {
-	GetMeasurement1(timestamp time.Time) (*Measurement, error)
+	GetMeasurement(timestamp time.Time) (*Measurement, error)
 	CreateMeasurement(newMeasurement Measurement) error
 }
 
@@ -79,7 +79,7 @@ func (h *MeasurementsHandler) GetMeasurement(w http.ResponseWriter, r *http.Requ
 	}
 
 	Info.Printf("Attempting to get measurement for timestamp %v", timestamp)
-	measurement, err := h.svc.GetMeasurement1(timestamp)
+	measurement, err := h.svc.GetMeasurement(timestamp)
 	if err != nil {
 		Error.Println(err)
 		if err.Error() == NOT_FOUND {

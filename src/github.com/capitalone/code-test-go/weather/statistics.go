@@ -48,8 +48,8 @@ func (h *StatisticsHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	statList, err := h.svc.GetStats(stats, metrics, fromStamp, toStamp)
 	if err != nil {
 		Error.Println(err)
-		if err.Error() == NOT_IMPLEMENTED {
-			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+		if err.Error() == BAD_REQUEST {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		} else {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
@@ -64,6 +64,6 @@ func (h *StatisticsHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(bytes)
-	w.WriteHeader(http.StatusOK)
+	//w.WriteHeader(http.StatusOK)
 }
 
