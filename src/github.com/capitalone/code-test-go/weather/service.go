@@ -5,9 +5,9 @@ import (
 	. "fmt"
 	"log"
 	"os"
+	"sort"
 	"sync"
 	"time"
-	"sort"
 )
 
 var (
@@ -17,8 +17,8 @@ var (
 
 const (
 	NOT_IMPLEMENTED = "Not Implemented"
-	NOT_FOUND = "timestamp not found"
-	BAD_REQUEST = "bad request"
+	NOT_FOUND       = "timestamp not found"
+	BAD_REQUEST     = "bad request"
 )
 
 func init() {
@@ -40,13 +40,13 @@ func NewWeatherService() *WeatherService {
 // GetMeasurement retrieves a single measurement based on timestamp
 func (s *WeatherService) GetMeasurement(timestamp time.Time) (*Measurement, error) {
 
-	if j, ok := s.measurements.Load(timestamp); !ok{
+	if j, ok := s.measurements.Load(timestamp); !ok {
 		Println("Timestamp info doesn't exist !")
 		return &Measurement{}, errors.New(NOT_FOUND)
-	}else {
+	} else {
 		Println("Timestamp map found")
-		m,ok := j.(map[string]float32)
-		if !ok{
+		m, ok := j.(map[string]float32)
+		if !ok {
 			Println("there was an error in type assertion")
 		}
 		mObject := Measurement{}
@@ -54,7 +54,7 @@ func (s *WeatherService) GetMeasurement(timestamp time.Time) (*Measurement, erro
 		mObject.Metrics = m
 
 		return &mObject, nil
-		}
+	}
 
 	// for code fulfillment sake
 	return &Measurement{}, nil
@@ -63,13 +63,13 @@ func (s *WeatherService) GetMeasurement(timestamp time.Time) (*Measurement, erro
 // CreateMeasurement creates and stores a new measurement
 func (s *WeatherService) CreateMeasurement(newMeasurement Measurement) error {
 
-	if _, ok := s.measurements.LoadOrStore(newMeasurement.Timestamp, newMeasurement.Metrics); !ok{
+	if _, ok := s.measurements.LoadOrStore(newMeasurement.Timestamp, newMeasurement.Metrics); !ok {
 
 		Println("Measurement created in memory !")
 		return nil
-		}else {
+	} else {
 		return errors.New("Timestamp info exists")
-		}
+	}
 
 	return nil
 }
@@ -79,7 +79,7 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 
 	//initialize a variable to return
 	sttSlice := []StatisticRow{}
-	sst := StatisticRow{}
+	stt := StatisticRow{}
 
 	// keeps track of results from
 	tempDataVar := []*Measurement{}
@@ -95,15 +95,15 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 	//	//	//	//
 
 	// input validation to make sure time stamps are not invalid
-	if to.Sub(from) < 0{
+	if to.Sub(from) < 0 {
 		Println("please enter from time older than to time")
 		return sttSlice, errors.New(BAD_REQUEST)
 
-	}else if from == to{
+	} else if from == to {
 		Print("from time stamp equals to")
-		if tempVar, err := s.GetMeasurement(from); err != nil{
+		if tempVar, err := s.GetMeasurement(from); err != nil {
 			return sttSlice, err
-		}else {
+		} else {
 			// Special Case !
 
 			// for every metric
@@ -120,22 +120,22 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 						Println("adding metric values")
 						stt := StatisticRow{
 							Metric: metric,
-							Stat: stat,
-							Value: tempVar.Metrics[metric],
+							Stat:   stat,
+							Value:  tempVar.Metrics[metric],
 						}
 						sttSlice = append(sttSlice, stt)
 
-					default :
+					default:
 						return []StatisticRow{}, errors.New("Invalid stat")
 					}
 				}
 			}
 			return sttSlice, nil
-			}
-	}else{
+		}
+	} else {
 
 		// get each measurement value for from timestamp incrementing by 10 minutes until "to" timestamp
-		for to.Sub(timeVar) > 0{
+		for to.Sub(timeVar) > 0 {
 			data, err := s.GetMeasurement(timeVar)
 			if err != nil {
 				return sttSlice, errors.New("Problem with data")
@@ -147,15 +147,15 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 		floatSlice := []float32{}
 
 		// for every metric
-		for _, metric := range metrics{
+		for _, metric := range metrics {
 
 			// flush out the slice for new metric data to be loaded
 			floatSlice = nil
 
 			// if metric is in measurements data, collect it
-			for _, mapVal := range tempDataVar{
+			for _, mapVal := range tempDataVar {
 
-				if val, ok := mapVal.Metrics[metric]; ok{
+				if val, ok := mapVal.Metrics[metric]; ok {
 					Println("value found for ", metric)
 					floatSlice = append(floatSlice, val)
 					metricMap[metric] = floatSlice
@@ -163,33 +163,53 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 			}
 		}
 
-		for k, v := range metricMap{
+		for k, v := range metricMap {
 			Print("this is the key %d , this is the value %d", k, v)
 		}
 	}
 
 	// we have the data, now check for what stats are asked for
-	for _,stat := range stats{
 
-		switch stat{
+	for _, metric := range metrics {
+		slc := metricMap[metric]
+		for _, stat := range stats {
+			switch stat {
 
-		case "min":
+			case "min":
 
-			for _ , metric := range metrics{
-				slc := metricMap[metric]
 				// to get the min, sort the slice in ascending order and pick the first indexed value
-				sort.SliceStable(slc, func(i, j int) bool{ return slc[i] < slc[j]})
-				Println(slc[0])
+				sort.SliceStable(slc, func(i, j int) bool { return slc[i] < slc[j] })
+				stt.Stat = stat
+				stt.Value = slc[0]
+				stt.Metric = metric
+				sttSlice = append(sttSlice, stt)
+
+			case "max":
+
+				// to get the max, sort the slice in ascending order and pick the last indexed value
+				sort.SliceStable(slc, func(i, j int) bool { return slc[i] < slc[j] })
+
+				stt.Stat = stat
+				stt.Value = slc[len(slc)-1]
+				stt.Metric = metric
+				sttSlice = append(sttSlice, stt)
+
+			case "average":
+
+				var sum float32
+
+				for _, val := range slc {
+					sum += val
+
+				}
+				stt.Stat = stat
+				stt.Value = sum/float32(len(slc))
+				stt.Metric = metric
+				sttSlice = append(sttSlice, stt)
 			}
-
-
 		}
-
 
 	}
 
-
-
-
-	return nil, errors.New(NOT_IMPLEMENTED)
+	return sttSlice, nil
 }
