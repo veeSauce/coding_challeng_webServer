@@ -57,7 +57,7 @@ func (h *MeasurementsHandler) CreateMeasurement(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	measureTime := measurement.Timestamp.UTC().Format("2006-01-02T15:04:00:000Z")
+	measureTime := measurement.Timestamp.UTC().Format("2006-01-02T15:04:00:000Z:")
 	loc := "/measurements/"+measureTime
 	w.Header().Set("Location", loc)
 	w.WriteHeader(http.StatusCreated)
