@@ -158,7 +158,6 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 			}
 		}
 
-
 	}
 
 	// we have the data, now check for what stats are asked for
