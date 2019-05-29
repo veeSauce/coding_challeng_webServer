@@ -44,7 +44,7 @@ func (s *WeatherService) GetMeasurement(timestamp time.Time) (*Measurement, erro
 		Println("Timestamp info doesn't exist, returning empty struct")
 		// app will return Measurement object without any metrics data
 		emptyMatrix := make(map[string]float32)
-		return &Measurement{Timestamp:timestamp, Metrics:emptyMatrix}, errors.New("Timestamp info doesn't exist")
+		return &Measurement{Timestamp:timestamp, Metrics:emptyMatrix}, errors.New(NOT_FOUND)
 	} else {
 		Println("Timestamp map found")
 		m, ok := j.(map[string]float32)
