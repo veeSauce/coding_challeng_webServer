@@ -42,7 +42,6 @@ func (s *WeatherService) GetMeasurement(timestamp time.Time) (*Measurement, erro
 
 	if j, ok := s.measurements.Load(timestamp); !ok {
 		Println("Timestamp info doesn't exist, returning empty struct")
-
 		// app will return Measurement object without any metrics data
 		emptyMatrix := make(map[string]float32)
 		return &Measurement{Timestamp:timestamp, Metrics:emptyMatrix}, nil
@@ -174,44 +173,44 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 	// we have the data, now check for what stats are asked for
 
 	for _, metric := range metrics {
-		slc := metricMap[metric]
-		for _, stat := range stats {
-			switch stat {
+		if slc, ok := metricMap[metric]; ok {
+			for _, stat := range stats {
+				switch stat {
 
-			case "min":
+				case "min":
 
-				// to get the min, sort the slice in ascending order and pick the first indexed value
-				sort.SliceStable(slc, func(i, j int) bool { return slc[i] < slc[j] })
-				stt.Stat = stat
-				stt.Value = slc[0]
-				stt.Metric = metric
-				sttSlice = append(sttSlice, stt)
+					// to get the min, sort the slice in ascending order and pick the first indexed value
+					sort.SliceStable(slc, func(i, j int) bool { return slc[i] < slc[j] })
+					stt.Stat = stat
+					stt.Value = slc[0]
+					stt.Metric = metric
+					sttSlice = append(sttSlice, stt)
 
-			case "max":
+				case "max":
 
-				// to get the max, sort the slice in ascending order and pick the last indexed value
-				sort.SliceStable(slc, func(i, j int) bool { return slc[i] < slc[j] })
+					// to get the max, sort the slice in ascending order and pick the last indexed value
+					sort.SliceStable(slc, func(i, j int) bool { return slc[i] < slc[j] })
 
-				stt.Stat = stat
-				stt.Value = slc[len(slc)-1]
-				stt.Metric = metric
-				sttSlice = append(sttSlice, stt)
+					stt.Stat = stat
+					stt.Value = slc[len(slc)-1]
+					stt.Metric = metric
+					sttSlice = append(sttSlice, stt)
 
-			case "average":
+				case "average":
 
-				var sum float32
+					var sum float32
 
-				for _, val := range slc {
-					sum += val
+					for _, val := range slc {
+						sum += val
 
+					}
+					stt.Stat = stat
+					stt.Value = sum / float32(len(slc))
+					stt.Metric = metric
+					sttSlice = append(sttSlice, stt)
 				}
-				stt.Stat = stat
-				stt.Value = sum/float32(len(slc))
-				stt.Metric = metric
-				sttSlice = append(sttSlice, stt)
 			}
 		}
-
 	}
 
 	return sttSlice, nil
