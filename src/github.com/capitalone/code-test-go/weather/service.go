@@ -44,7 +44,7 @@ func (s *WeatherService) GetMeasurement(timestamp time.Time) (*Measurement, erro
 		Println("Timestamp info doesn't exist, returning empty struct")
 		// app will return Measurement object without any metrics data
 		emptyMatrix := make(map[string]float32)
-		return &Measurement{Timestamp:timestamp, Metrics:emptyMatrix}, nil
+		return &Measurement{Timestamp:timestamp, Metrics:emptyMatrix}, errors.New("Timestamp info doesn't exist")
 	} else {
 		Println("Timestamp map found")
 		m, ok := j.(map[string]float32)
@@ -103,9 +103,7 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 
 	} else if from == to {
 		Print("from time stamp equals to")
-		if tempVar, err := s.GetMeasurement(from); err != nil {
-			return sttSlice, err
-		} else {
+		tempVar, _ := s.GetMeasurement(from)
 			// Special Case !
 
 			// for every metric
@@ -118,8 +116,6 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 					// since special case, value is the same
 					switch stat {
 					case "min", "max", "average":
-
-						Println("adding metric values")
 						stt := StatisticRow{
 							Metric: metric,
 							Stat:   stat,
@@ -133,7 +129,7 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 				}
 			}
 			return sttSlice, nil
-		}
+
 	} else {
 
 		// get each measurement value for from timestamp incrementing by 10 minutes until "to" timestamp
@@ -165,9 +161,7 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 			}
 		}
 
-		for k, v := range metricMap {
-			Print("this is the key %d , this is the value %d", k, v)
-		}
+
 	}
 
 	// we have the data, now check for what stats are asked for
