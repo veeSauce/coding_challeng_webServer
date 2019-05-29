@@ -42,7 +42,9 @@ func (s *WeatherService) GetMeasurement(timestamp time.Time) (*Measurement, erro
 
 	if j, ok := s.measurements.Load(timestamp); !ok {
 		Println("Timestamp info doesn't exist !")
-		return &Measurement{}, errors.New(NOT_FOUND)
+
+		// app will return Measurement object without any metrics data
+		return &Measurement{Timestamp:timestamp}, nil
 	} else {
 		Println("Timestamp map found")
 		m, ok := j.(map[string]float32)
