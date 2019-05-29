@@ -134,10 +134,7 @@ func (s *WeatherService) GetStats(stats []string, metrics []string, from time.Ti
 
 		// get each measurement value for from timestamp incrementing by 10 minutes until "to" timestamp
 		for to.Sub(timeVar) > 0 {
-			data, err := s.GetMeasurement(timeVar)
-			if err != nil {
-				return sttSlice, errors.New("Problem with data")
-			}
+			data, _ := s.GetMeasurement(timeVar)
 			tempDataVar = append(tempDataVar, data)
 			timeVar = timeVar.Add(10 * time.Minute)
 		}
